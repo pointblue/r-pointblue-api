@@ -15,14 +15,16 @@ pbApiRequest(
 \arguments{
 \item{surveyType}{The survey type to request (defaults to \code{"PointCount"}).}
 
-\item{projects}{Optional character vector of project codes to query (e.g. \code{"ADOB"}). If none given, all accessible project data are fetched.}
+\item{projects}{Optional character vector of project codes to query (e.g. \code{"ADOB"}).
+Multiple codes may be supplied either as a vector or comma-separated string.
+If \code{NULL}, all accessible project data are fetched.}
 
 \item{dateBegin}{Optional ISO date string for the beginning of the date range.}
 
 \item{dateEnd}{Optional ISO date string for the end of the date range.}
 
-\item{protocol}{Optional single protocol name or comma-separated protocols. When
-supplied, restricts results to those protocols.}
+\item{protocol}{Optional single protocol name or comma-separated protocols (vectors are
+collapsed for convenience). When supplied, restricts results to those protocols.}
 }
 \value{
 A tibble containing point count survey records.

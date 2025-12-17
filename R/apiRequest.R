@@ -7,11 +7,13 @@
 #' variable \code{PB_API_KEY}.
 #'
 #' @param surveyType The survey type to request (defaults to \code{"PointCount"}).
-#' @param projects Optional character vector of project codes to query (e.g. \code{"ADOB"}). If none given, all accessible project data are fetched.
+#' @param projects Optional character vector of project codes to query (e.g. \code{"ADOB"}).
+#'   Multiple codes may be supplied either as a vector or comma-separated string.
+#'   If \code{NULL}, all accessible project data are fetched.
 #' @param dateBegin Optional ISO date string for the beginning of the date range.
 #' @param dateEnd Optional ISO date string for the end of the date range.
-#' @param protocol Optional single protocol name or comma-separated protocols. When
-#'   supplied, restricts results to those protocols.
+#' @param protocol Optional single protocol name or comma-separated protocols (vectors are
+#'   collapsed for convenience). When supplied, restricts results to those protocols.
 #'
 #' @return A tibble containing point count survey records.
 #'
@@ -51,6 +53,14 @@ pbApiRequest <- function(surveyType = "PointCount",
       ),
       call. = FALSE
     )
+  }
+
+  # Normalize multi-value inputs to comma-separated strings for the API
+  if (!is.null(projects) && length(projects) > 1) {
+    projects <- paste(projects, collapse = ",")
+  }
+  if (!is.null(protocol) && length(protocol) > 1) {
+    protocol <- paste(protocol, collapse = ",")
   }
 
   # Fetch CSV data from the API
