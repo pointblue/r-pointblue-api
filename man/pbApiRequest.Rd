@@ -5,20 +5,24 @@
 \title{Fetch Point Count Data from the Point Blue API}
 \usage{
 pbApiRequest(
-  projects,
   surveyType = "PointCount",
+  projects = NULL,
   dateBegin = NULL,
-  dateEnd = NULL
+  dateEnd = NULL,
+  protocol = NULL
 )
 }
 \arguments{
-\item{projects}{A character vector of project codes to query (e.g. \code{"TOMKAT"}).}
-
 \item{surveyType}{The survey type to request (defaults to \code{"PointCount"}).}
+
+\item{projects}{Optional character vector of project codes to query (e.g. \code{"ADOB"}). If none given, all accessible project data are fetched.}
 
 \item{dateBegin}{Optional ISO date string for the beginning of the date range.}
 
 \item{dateEnd}{Optional ISO date string for the end of the date range.}
+
+\item{protocol}{Optional single protocol name or comma-separated protocols. When
+supplied, restricts results to those protocols.}
 }
 \value{
 A tibble containing point count survey records.
@@ -33,16 +37,18 @@ variable \code{PB_API_KEY}.
 
 
 The query uses the supplied \code{surveyType}. Optionally, specify
-\code{dateBegin} and/or \code{dateEnd} to filter results by date.
+\code{dateBegin} and/or \code{dateEnd} to filter results by date, and/or
+supply \code{protocol} to limit results to one or more protocols.
 }
 \examples{
 \dontrun{
 Sys.setenv(PB_API_KEY = "your_api_key_here")
 df <- pbApiRequest(
-  c("TOMKAT", "ABC"),
   surveyType = "PointCount",
+  projects = c("ADOB", "ABC"),
   dateBegin = "2001-01-01",
-  dateEnd = "2020-12-31"
+  dateEnd = "2020-12-31",
+  protocol = "ProtocolA,ProtocolB"
 )
 }
 
