@@ -23,7 +23,7 @@ df <- pbApiRequest(surveyType = "PointCount")
 
 Fetch point count data for a specific project(s)
 ```
-df <- pbApiRequest(surveyType = "PointCount", projects = c("BAYBACKNWR"))
+df <- pbApiRequest(surveyType = "PointCount", projects = c("BACKBAYNWR"))
 df <- pbApiRequest(surveyType = "PointCount", projects = c("BACKBAYNWR", "BIGOAKSNWR"))
 ```
 
@@ -47,5 +47,4 @@ Write to CSV file
 ```
 write.csv(df, "output.csv", row.names = FALSE)
 ```
-
 
