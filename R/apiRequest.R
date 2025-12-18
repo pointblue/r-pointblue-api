@@ -63,6 +63,28 @@ pbApiRequest <- function(surveyType = "PointCount",
     protocol <- paste(protocol, collapse = ",")
   }
 
+  normalize_date <- function(value, arg_name) {
+    if (is.null(value)) {
+      return(NULL)
+    }
+    if (inherits(value, c("Date", "POSIXt"))) {
+      return(format(value, "%Y-%m-%d"))
+    }
+    if (!is.character(value)) {
+      stop(
+        sprintf(
+          "%s must be supplied as an ISO date string (e.g. \"1997-01-01\") or a Date/POSIXt object.",
+          arg_name
+        ),
+        call. = FALSE
+      )
+    }
+    return(value)
+  }
+
+  dateBegin <- normalize_date(dateBegin, "dateBegin")
+  dateEnd <- normalize_date(dateEnd, "dateEnd")
+
   # Fetch CSV data from the API
   query <- list(
     surveyType = surveyType,
