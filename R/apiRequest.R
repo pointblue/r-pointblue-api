@@ -43,6 +43,8 @@ pbApiRequest <- function(surveyType = "PointCount",
 
   #TODO: Incorporate the notion of program
 
+  #TODO: Can this be generated from the OpenAPI spec?
+
   # Set up API key
   api_key <- Sys.getenv("PB_API_KEY")
   if (identical(api_key, "")) {
