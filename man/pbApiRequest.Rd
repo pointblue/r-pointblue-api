@@ -9,7 +9,9 @@ pbApiRequest(
   projects = NULL,
   dateBegin = NULL,
   dateEnd = NULL,
-  protocol = NULL
+  protocol = NULL,
+  species = NULL,
+  region = NULL
 )
 }
 \arguments{
@@ -25,6 +27,15 @@ If \code{NULL}, all accessible project data are fetched.}
 
 \item{protocol}{Optional single protocol name or comma-separated protocols (vectors are
 collapsed for convenience). When supplied, restricts results to those protocols.}
+
+\item{species}{Optional single species code or comma-separated species codes. When supplied,
+limits results to the provided species.}
+
+\item{region}{Optional single region filter in the form
+\code{REGION_DOMAIN_ID:REGION_ID} (e.g. \code{"US_STATES:06"}). Supply
+multiple regions either as a character vector or comma-separated string,
+provided all entries share the same region domain. When supplied, restricts
+results to the provided regions.}
 }
 \value{
 A tibble containing point count survey records.
@@ -40,7 +51,12 @@ variable \code{PB_API_KEY}.
 
 The query uses the supplied \code{surveyType}. Optionally, specify
 \code{dateBegin} and/or \code{dateEnd} to filter results by date, and/or
-supply \code{protocol} to limit results to one or more protocols.
+supply \code{protocol} to limit results to one or more protocols,
+\code{species} to restrict the output to particular species codes, and
+\code{region} (formatted as \code{REGION_DOMAIN_ID:REGION_ID}) to constrain
+the sampling units returned. When multiple regions are supplied they must all
+belong to the same region domain because the API accepts a single
+\code{regionDomainId} per request.
 }
 \examples{
 \dontrun{
@@ -50,7 +66,9 @@ df <- pbApiRequest(
   projects = c("ADOB", "ABC"),
   dateBegin = "2001-01-01",
   dateEnd = "2020-12-31",
-  protocol = "ProtocolA,ProtocolB"
+  protocol = "ProtocolA,ProtocolB",
+  species = "ATOW",
+  region = "US_STATES:06"
 )
 }
 

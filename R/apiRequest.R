@@ -14,13 +14,25 @@
 #' @param dateEnd Optional ISO date string for the end of the date range.
 #' @param protocol Optional single protocol name or comma-separated protocols (vectors are
 #'   collapsed for convenience). When supplied, restricts results to those protocols.
+#' @param species Optional single species code or comma-separated species codes. When supplied,
+#'   limits results to the provided species.
+#' @param region Optional single region filter in the form
+#'   \code{REGION_DOMAIN_ID:REGION_ID} (e.g. \code{"US_STATES:06"}). Supply
+#'   multiple regions either as a character vector or comma-separated string,
+#'   provided all entries share the same region domain. When supplied, restricts
+#'   results to the provided regions.
 #'
 #' @return A tibble containing point count survey records.
 #'
 #' @details
 #' The query uses the supplied \code{surveyType}. Optionally, specify
 #' \code{dateBegin} and/or \code{dateEnd} to filter results by date, and/or
-#' supply \code{protocol} to limit results to one or more protocols.
+#' supply \code{protocol} to limit results to one or more protocols,
+#' \code{species} to restrict the output to particular species codes, and
+#' \code{region} (formatted as \code{REGION_DOMAIN_ID:REGION_ID}) to constrain
+#' the sampling units returned. When multiple regions are supplied they must all
+#' belong to the same region domain because the API accepts a single
+#' \code{regionDomainId} per request.
 #'
 #' @examples
 #' \dontrun{
@@ -30,7 +42,9 @@
 #'   projects = c("ADOB", "ABC"),
 #'   dateBegin = "2001-01-01",
 #'   dateEnd = "2020-12-31",
-#'   protocol = "ProtocolA,ProtocolB"
+#'   protocol = "ProtocolA,ProtocolB",
+#'   species = "ATOW",
+#'   region = "US_STATES:06"
 #' )
 #' }
 #'
@@ -39,7 +53,9 @@ pbApiRequest <- function(surveyType = "PointCount",
                          projects = NULL,
                          dateBegin = NULL,
                          dateEnd = NULL,
-                         protocol = NULL) {
+                         protocol = NULL,
+                         species = NULL,
+                         region = NULL) {
 
   #TODO: Incorporate the notion of program
 
@@ -58,12 +74,73 @@ pbApiRequest <- function(surveyType = "PointCount",
   }
 
   # Normalize multi-value inputs to comma-separated strings for the API
-  if (!is.null(projects) && length(projects) > 1) {
-    projects <- paste(projects, collapse = ",")
+  collapse_if_needed <- function(value) {
+    if (!is.null(value) && length(value) > 1) {
+      return(paste(value, collapse = ","))
+    }
+    value
   }
-  if (!is.null(protocol) && length(protocol) > 1) {
-    protocol <- paste(protocol, collapse = ",")
+
+  projects <- collapse_if_needed(projects)
+  protocol <- collapse_if_needed(protocol)
+  species <- collapse_if_needed(species)
+
+  parse_region_filters <- function(region_value) {
+    if (is.null(region_value)) {
+      return(list(regionDomainId = NULL, regionValues = NULL))
+    }
+    if (!is.character(region_value)) {
+      stop(
+        'region must be supplied as character data using the format "REGION_DOMAIN_ID:REGION_ID".',
+        call. = FALSE
+      )
+    }
+
+    flattened <- paste(region_value, collapse = ",")
+    tokens <- strsplit(flattened, ",", fixed = TRUE)[[1]]
+    tokens <- trimws(tokens)
+    tokens <- tokens[nzchar(tokens)]
+    if (!length(tokens)) {
+      return(list(regionDomainId = NULL, regionValues = NULL))
+    }
+
+    parts <- strsplit(tokens, ":", fixed = TRUE)
+    valid_lengths <- vapply(parts, length, integer(1))
+    if (any(valid_lengths != 2)) {
+      stop(
+        'region values must include a single ":" separator (e.g. "US_STATES:06").',
+        call. = FALSE
+      )
+    }
+
+    domains <- vapply(parts, `[`, character(1), 1)
+    region_ids <- vapply(parts, `[`, character(1), 2)
+
+    if (any(!nzchar(domains)) || any(!nzchar(region_ids))) {
+      stop(
+        "regionDomainId and region identifiers cannot be empty.",
+        call. = FALSE
+      )
+    }
+
+    unique_domains <- unique(domains)
+    if (length(unique_domains) > 1) {
+      stop(
+        paste(
+          "All region values must share the same regionDomainId.",
+          'For example: region = c("US_STATES:06", "US_STATES:41").'
+        ),
+        call. = FALSE
+      )
+    }
+
+    list(
+      regionDomainId = unique_domains[1],
+      regionValues = paste(region_ids, collapse = ",")
+    )
   }
+
+  region_params <- parse_region_filters(region)
 
   normalize_date <- function(value, arg_name) {
     if (is.null(value)) {
@@ -93,7 +170,10 @@ pbApiRequest <- function(surveyType = "PointCount",
     project    = projects,
     dateBegin  = dateBegin,
     dateEnd    = dateEnd,
-    protocol   = protocol
+    protocol   = protocol,
+    species    = species,
+    regionDomainId = region_params$regionDomainId,
+    region     = region_params$regionValues
   )
   query <- query[!vapply(query, is.null, logical(1))]
 
