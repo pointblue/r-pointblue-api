@@ -81,14 +81,15 @@ Omitting the date argument returns data from all available dates
 ```
 df <- pbApiRequest(
   surveyType = "PointCount",
-  projects = "BACKBAYNWR,BIGOAKSNWR",
   dateBegin = "2003-01-01",
   dateEnd = "2003-12-31",
-  protocol = "3_5m50M+_NWRS_R5_LAND",
-  species = "ATOW,AMCR",
-  region = "US_STATES:06,US_STATES:41"
+  protocol = "3_5_10m25_50M+Fly",
+  region = "US_STATES:37",
+  species = "RBWO"
 )
 ```
+All point count data from 2003 in North Carolina where a Red-bellied Woodpecker
+was detected using the 3_5_10m25_50M+Fly survey protocol.
 
 **Write to CSV file**  
 ```
